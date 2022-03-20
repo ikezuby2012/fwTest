@@ -49,7 +49,7 @@ exports.configureFees = catchAsync(async (req, res, next) => {
     const { BearsFee } = customer;
     let feeType, AppliedFeeValue, AppliedFeeID, ChargeAmount, SettlementAmount, feeValue;
     let feeLocale = "INTL";
-    let feeEntity = "*(*)";
+    let feeEntity;
     feeEntity = `${Type}(${Brand})`;
 
     if (currency_country === Country) feeLocale = "LOCL";
@@ -76,11 +76,6 @@ exports.configureFees = catchAsync(async (req, res, next) => {
         return next(new AppError("no configuration found for the set", 404));
     }
 
-    // for (let props of matchConfig) {
-    //     feeType = props.fee_type;
-    //     feeValue = props.fee_value;
-    //     // console.log(feeType);
-    // }
     feeType = results[0].fee_type;
     feeValue = results[0].fee_value;
 
