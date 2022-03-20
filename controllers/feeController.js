@@ -50,41 +50,40 @@ exports.configureFees = catchAsync(async (req, res, next) => {
     let feeType, AppliedFeeValue, AppliedFeeID, ChargeAmount, SettlementAmount, feeValue;
     let feeLocale = "INTL";
     let feeEntity = "*(*)";
-    feeEntity = `${Type}(${Brand})`
+    feeEntity = `${Type}(${Brand})`;
 
     if (currency_country === Country) feeLocale = "LOCL";
+
+    console.log(feeLocale, feeEntity);
 
     const matchConfig = await Fee.aggregate([
         {
             $match: {
                 fee_currency: currency,
-                fee_locale: feeLocale,
-                // $or: [
-                //     {
-                //         fee_entity: feeEntity,
-                //         fee_entity: `${Type}(*)`,
-                //         fee_entity: `*(*)`
-                //     }
-                // ]
-                $or: [
-                    {
-                        fee_entity: {
-                            $eq: "*(*)", $eq: feeEntity, $eq: `${Type}(*)`
-                        }
-                    }
-                ]
+                fee_locale: {
+                    $in: ["*", feeLocale]
+                },
+                fee_entity: {
+                    $in: ["*(*)", `${Type}(*)`, feeEntity]
+                }
             }
         }
     ]);
+    // console.log(matchConfig);
+    const results = matchConfig.sort((a, b) => a.precedence - b.precedence);
+
     if (matchConfig.length === 0) {
         return next(new AppError("no configuration found for the set", 404));
     }
-    // console.log(feeType);
 
-    for (let props of matchConfig) {
-        feeType = props.fee_type;
-        feeValue = props.fee_value;
-    }
+    // for (let props of matchConfig) {
+    //     feeType = props.fee_type;
+    //     feeValue = props.fee_value;
+    //     // console.log(feeType);
+    // }
+    feeType = results[0].fee_type;
+    feeValue = results[0].fee_value;
+
     if (feeType === "FLAT_PERC") {
         const fee_value = feeValue.split(":")[0] * 1;
         const fee_ratio = feeValue.split(":")[1] * 1;

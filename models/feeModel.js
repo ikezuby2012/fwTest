@@ -14,7 +14,7 @@ const feeSchema = new Schema({
     fee_locale: {
         type: String,
         enum: ["*", "LOCL", "INTL"],
-        default: "LOCL"
+        default: "*"
     },
     fee_entity: {
         type: String,
@@ -24,12 +24,25 @@ const feeSchema = new Schema({
     },
     fee_type: {
         type: String,
-        enum: ["FLAT", "PERC", "FLAT_PERC"]
+        enum: ["FLAT", "PERC", "FLAT_PERC"],
+        default: "FLAT"
     },
     fee_value: {
         type: String,
         // min: [0, "this is a non-negative value"]
-    }
+    },
+    precedence: { type: Number }
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+});
+
+feeSchema.pre("save", async function (next) {
+    const { FCS } = this;
+    const str1 = FCS.replace(/[^*]/g, "").length;
+    console.log(str1);
+    this.precedence = str1;
+    next();
 });
 
 const Fee = model("Fee", feeSchema);

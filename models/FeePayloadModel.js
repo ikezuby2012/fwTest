@@ -72,7 +72,11 @@ const feePayloadSchema = new Schema({
             default: "NG"
         }
     }
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
 });
+
 
 const FeePayload = model("Fee", feePayloadSchema);
 module.exports = FeePayload;
